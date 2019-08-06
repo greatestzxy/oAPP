@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#This part bulit up, tarined, and stored the model
+#This part has bulit up, tarined, and stored the model
 
 import tensorflow as tf
 
