@@ -90,7 +90,7 @@ saver = tf.train.Saver()
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 #read the image and convert it to geryscale and apply Gussian filtering
-path = "t1.jpg"
+path = "t1.jpeg"
 img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
 bw = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 bw = cv2.GaussianBlur(bw, (7, 7), 0)
