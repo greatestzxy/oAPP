@@ -93,7 +93,7 @@ with tf.Session() as sess:
     sess.run(tf.initialize_all_variables())
 
     # start training
-    for i in range(200):
+    for i in range(20000):
         batch = mnist.train.next_batch(50)
 
         #print traning accuracy every 100 iterations
