@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#This part has bulit up, tarined, and stored the model
+#This part bulit up, tarined, and stored the model
 
 import tensorflow as tf
 
@@ -79,24 +79,40 @@ correct_predict = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
 # tf.cast transforms bool to float，tf.reduce_mean calculates average accuracy
 accuracy = tf.reduce_mean(tf.cast(correct_predict, "float"))
 
+tf.summary.scalar('loss', cross_entropy) #添加标量统计结果。
+tf.summary.scalar('accuracy', accuracy)
+# 定义合并变量操作，一次性生成所有摘要数据
+merged_summary_op = tf.summary.merge_all()
 
 # initialize the saver
 saver = tf.train.Saver()
 
 #train the model
 with tf.Session() as sess:
-    # initialize parameters
+    # initialize the parameters
     sess.run(tf.initialize_all_variables())
+    summary_writer = tf.summary.FileWriter('./log', graph=tf.get_default_graph())
 
-    # batch=50,print accuracy every 100 iterations
-    for i in range(5000):
+    # start training,batch=50
+    for i in range(20000):
         batch = mnist.train.next_batch(50)
         if i % 100 == 0:
+
             train_accuracy = accuracy.eval(feed_dict={
                 x: batch[0], y_: batch[1], keep_prob: 1.0})
             print("step %d, training accuracy %g" % (i, train_accuracy))
 
 
+        _, loss, summary = sess.run([train_step, cross_entropy, merged_summary_op],feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+
+        summary_writer.add_summary(summary, i)
+
+        print("loss:", i, loss)
+
+
+
+    print("test accuracy %g" % accuracy.eval(feed_dict={
+        x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
+
     saver.save(sess, 'model/train_mnist.model')
     print('save completed')
-
