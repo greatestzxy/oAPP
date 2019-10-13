@@ -321,7 +321,7 @@ def get_image_in_box(img, box):
 
     # 放大图像
     imgOut = cv2.resize(imgOut, (imgOut.shape[1] * 2, imgOut.shape[0] * 2))
-    cv2.imshow("resize", imgOut)
+    #cv2.imshow("resize", imgOut)
 
     print('[INFO] image size: {}'.format(imgOut.shape))
 
@@ -337,15 +337,15 @@ def get_image_in_box(img, box):
 
     # 腐蚀
     imgOut = cv2.erode(imgOut, kernel)
-    cv2.imshow("erode", imgOut)
+    #cv2.imshow("erode", imgOut)
 
     ex_open = cv2.morphologyEx(imgOut, cv2.MORPH_OPEN, kernel)
-    cv2.imshow("open", ex_open)
+    #cv2.imshow("open", ex_open)
     # imgOut = ex_open
 
     # 闭运算
     ex_close = cv2.morphologyEx(imgOut, cv2.MORPH_CLOSE, kernel)
-    cv2.imshow("close", ex_close)
+    #cv2.imshow("close", ex_close)
     # imgOut = ex_close
 
     # # 膨胀
@@ -354,11 +354,11 @@ def get_image_in_box(img, box):
 
     # 平滑
     imgOut = cv2.GaussianBlur(imgOut,(5,5),0)
-    cv2.imshow("GaussianBlur", imgOut)
+    #cv2.imshow("GaussianBlur", imgOut)
 
     # 灰度化
     imgOut = cv2.cvtColor(imgOut, cv2.COLOR_BGR2GRAY)
-    cv2.imshow("cvtColor", imgOut)
+    #cv2.imshow("cvtColor", imgOut)
 
     # 增强对比度
     ehist = cv2.equalizeHist(imgOut)
@@ -366,14 +366,14 @@ def get_image_in_box(img, box):
     chist = clahe.apply(imgOut)
     # cv2.imshow("chist", chist)
     hist = np.hstack((imgOut, ehist, chist))
-    cv2.imshow("hist", hist)
+    #cv2.imshow("hist", hist)
 
     imgOut = chist
     # imgOut = ehist
 
     # 膨胀
     imgOut = cv2.dilate(imgOut, kernel)
-    cv2.imshow("dilate", imgOut)
+    #cv2.imshow("dilate", imgOut)
 
     # # OTSU法二值化
     # ret, th_otsu = cv2.threshold(imgOut, 0, 255, cv2.THRESH_OTSU)
@@ -382,12 +382,12 @@ def get_image_in_box(img, box):
 
     # 二值化
     ret, th_bin = cv2.threshold(imgOut, 75, 255, cv2.THRESH_BINARY)
-    cv2.imshow("threshold", th_bin)
+    #cv2.imshow("threshold", th_bin)
     imgOut = th_bin
 
     # 去除边缘
     imgOut = remove_bound_and_small_area(imgOut)
-    cv2.imshow("remove_bound_area", imgOut)
+    #cv2.imshow("remove_bound_area", imgOut)
 
     cv2.waitKey(0)
     return imgOut
@@ -421,11 +421,13 @@ def split_to_area_and_recognize(opencv_img, padding = (0.08, 0.12)): # padding (
         # text += area_to_char_text(opencv_img[area[0]:area[2], area[1]:area[3]])
         img_to_recog = cv2.copyMakeBorder(255 - img_as_ubyte(r.image), dy, dy, dx, dx, cv2.BORDER_CONSTANT, value=[255, 255, 255])
         text += area_to_char_text(img_to_recog)
-        cv2.imshow("split"+str(ind_r), img_to_recog)
+        #'''
+        #cv2.imshow("split"+str(ind_r), img_to_recog)
+        #'''
         area = [max(0,_area[0]-dy),max(0,_area[1]-dx),min(height,_area[2]+dy),min(width,_area[3]+dx) ]
         cv2.polylines(opencv_img_cpy, [np.array([[area[1],area[0]],[area[3],area[0]],[area[3],area[2]],[area[1],area[2]],[area[1],area[0]]])], True, color=(0, 0, 0), thickness=1)
-    cv2.imshow("split", opencv_img_cpy)
-    cv2.waitKey(0)
+    #cv2.imshow("split", opencv_img_cpy)
+    #cv2.waitKey(0)
     return text
 
 
@@ -434,3 +436,7 @@ def recognize_to_text(img, box):
     text = split_to_area_and_recognize(img_in_box)
     # text = area_to_text(img_in_box);
     return text
+
+
+
+
