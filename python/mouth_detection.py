@@ -14,7 +14,7 @@ def is_only_one_person(detect):
     but detected zero or two), so this function will not be used.
     '''
     if len(detect) != 1 :
-        print("no person or not only one person in image.")
+        #print("no person or not only one person in image.")
         return False
     return True
 
@@ -133,3 +133,44 @@ def mouth_detection_video(image, detector, predictor):
         (x, y, w, h) = cv2.boundingRect(np.array([shape[i:j]]))
         cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0))
         return x, y, w, h
+
+
+def mouth_area(image, detector, predictor):
+    '''
+    Same function as mouth_detection image, except detect mouth location in video then no need to visualize it.
+    This function was used for only video processing(main_video.py in this project)
+    :param image: video frame
+    :param detector: dlib's face detector (HOG-based)
+    :param predictor: the facial landmark predictor
+    :return: x, y, w, h: (x, y)-coordinates of the left-top point of mouth bounding box
+    w: width of bounding box, h: height of bounding box
+    '''
+    # load the input image and convert it to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # detect faces in the grayscale image
+    # The 1 in the second argument indicates that we should upsample the image
+    # 1 time.  This will make everything bigger and allow us to detect more
+    # faces.
+    rect = detector(gray, 1)
+    if not is_only_one_person(rect):
+        pass
+    else:
+        # determine the facial landmarks for the face region, then
+        # convert the landmark (x, y)-coordinates to a NumPy array
+        shape = predictor(gray, rect[0])
+        shape = face_utils.shape_to_np(shape)
+
+        (i, j) = face_utils.FACIAL_LANDMARKS_IDXS["mouth"]
+
+        mouth = shape[i:j]
+
+        A = np.linalg.norm(mouth[2] - mouth[9])  # 51, 59
+        B = np.linalg.norm(mouth[4] - mouth[7])  # 53, 57
+        C = np.linalg.norm(mouth[0] - mouth[6])  # 49, 55
+        mar = (A + B) / (2.0 * C)
+
+
+        return mar
+
+
