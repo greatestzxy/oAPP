@@ -255,6 +255,10 @@ def main(argv=None):
 											cv2.putText(im[:, :, ::-1],
 										            "please place the pill on your tongue, then close your mouth for 10 seconds",
 										            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+										else:
+											cv2.putText(im[:, :, ::-1],
+											            "time starts",
+											            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
 
 
