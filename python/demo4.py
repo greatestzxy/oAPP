@@ -178,9 +178,9 @@ def main(argv=None):
 						(x, y, w, h) = mouth_detection.mouth_detection_video(im[:, :, ::-1], detector, predictor)
 
 						if (pill_inside == 0):
-							cv2.putText(im[:, :, ::-1], "please place the pill on your tongue", (50, 50),
-							            cv2.FONT_HERSHEY_SIMPLEX, 0.7,
-							            (0, 0, 255), 2)
+							cv2.putText(im[:, :, ::-1],
+							            "please place the pill on your tongue, then close your mouth for 10 seconds",
+							            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 							'''
 							if h < 0.2 * face_height:
 								cv2.putText(im[:, :, ::-1], "mouth close,please open your mouth", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
@@ -224,10 +224,8 @@ def main(argv=None):
 									cv2.rectangle(im[:, :, ::-1], (x + px, y + d + py),
 									              (x + px + pw, y + d + py + ph), (0, 255, 0), 2)
 									if ((pw < w) & (ph < h)):
-										cv2.putText(im[:, :, ::-1],
-										            "then please close your mouth for 30 seconds",
-										            (350, 50), cv2.FONT_HERSHEY_SIMPLEX,
-										            0.7, (0, 0, 255), 2)
+										cv2.putText(im[:, :, ::-1], "please place the pill on your tongue, then close your mouth for 10 seconds",
+										            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 										pill_inside = True
 										x = 5
 
@@ -244,6 +242,7 @@ def main(argv=None):
 						else:
 							if x <= 0:
 								pill_inside = 0
+								timer = 0
 							else:
 								d = int(0.2 * h)
 								if orig[y + d:y + h, x:x + w] is not None:
@@ -253,28 +252,38 @@ def main(argv=None):
 									(px, py, pw, ph) = utils.color_detection_white(roi)
 									if (pw != 0) or (py != 0):  # there's pill in the mouth area
 										cv2.putText(im[:, :, ::-1],
-										            "please close your mouth for 30 seconds",
-										            (350, 50), cv2.FONT_HERSHEY_SIMPLEX,
-										            0.7, (0, 0, 255), 2)
+										            "please place the pill on your tongue, then close your mouth for 10 seconds",
+										            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 										pass
 
 									else:  # there's no pill near the face area
 
-										if h < 0.2 * face_height:  # there's no pill beca
-											pill_start = time.time
-											time_status = 1
-										else:
+										if h < 0.2 * face_height:
+
+											timer = timer+1
+											cv2.putText(im[:, :, ::-1],
+											            "time starts",
+											            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+										else: #there's no pill because it was blocked by mouth and the tolerance is 5 frames
 											x = x - 1
+											cv2.putText(im[:, :, ::-1],
+											            "please place the pill on your tongue, then close your mouth for 10 seconds",
+											            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
 								else:
 									pass
 
-								if h < 0.2 * face_height:
-									pill_start = time.time
-									time_status = 1
+
 
 					else:
 						pass
+
+
+					if timer>= 30:
+						cv2.putText(im[:, :, ::-1],
+						            "time's up",
+						            (100, 200), cv2.FONT_HERSHEY_SIMPLEX,
+						            0.7, (0, 0, 255), 2)
 				# videoWriter.write(im[:, :, ::-1])
 
 				cv2.imshow("im", im[:, :, ::-1])
