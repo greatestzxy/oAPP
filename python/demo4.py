@@ -251,14 +251,16 @@ def main(argv=None):
 									# (mx,my,mw,mh) = utils.color_detection_red(roi)
 									(px, py, pw, ph) = utils.color_detection_white(roi)
 									if (pw != 0) or (py != 0):  # there's pill in the mouth area
-										if timer==0:
-											cv2.putText(im[:, :, ::-1],
+										#if timer==0:
+										cv2.putText(im[:, :, ::-1],
 										            "please place the pill on your tongue, then close your mouth for 10 seconds",
 										            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+										'''
 										else:
 											cv2.putText(im[:, :, ::-1],
 											            "time starts",
 											            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+										'''
 
 
 
