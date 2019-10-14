@@ -1,4 +1,4 @@
-# python demo.py - -test_data_path= N1_1.mp4 - -expected = "N11" - -name = "xiyuan"
+# python demo.py - -test_data_path=test.mp4 - -expected = "E4" - -name = "xiyuan"
 
 
 import cv2
@@ -222,7 +222,7 @@ def main(argv=None):
 								(px, py, pw, ph) = utils.color_detection_white(roi)
 								if (pw != 0) or (py != 0):
 									cv2.rectangle(im[:, :, ::-1], (x + px, y + d + py),
-									              (x + px + pw, y + d + py + ph), (0, 255, 0), 2)
+									              (x + px + pw, y + d + py + ph), (255, 255, 255), 2)
 									if ((pw < w) & (ph < h)):
 										cv2.putText(im[:, :, ::-1], "please place the pill on your tongue, then close your mouth for 10 seconds",
 										            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
@@ -251,10 +251,12 @@ def main(argv=None):
 									# (mx,my,mw,mh) = utils.color_detection_red(roi)
 									(px, py, pw, ph) = utils.color_detection_white(roi)
 									if (pw != 0) or (py != 0):  # there's pill in the mouth area
-										cv2.putText(im[:, :, ::-1],
+										if timer==0:
+											cv2.putText(im[:, :, ::-1],
 										            "please place the pill on your tongue, then close your mouth for 10 seconds",
 										            (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-										pass
+
+
 
 									else:  # there's no pill near the face area
 
