@@ -192,8 +192,8 @@ def main(argv=None):
 
 							add = np.array([[left],[top]])
 							ax = box.astype(np.int32).reshape((-1, 1, 2))
-							cv2.putText(im[:, :, ::-1], text, (box[0][0]+left,box[0][1]+top), cv2.FONT_HERSHEY_SIMPLEX, 2.8,
-							            (255, 255, 0), thickness=1)
+							cv2.putText(im[:, :, ::-1], text, (box[0][0]+left,box[0][1]+top), cv2.FONT_HERSHEY_SIMPLEX, 2.5,
+							            (255, 255, 0), thickness=2)
 
 							#cv2.polylines(im[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], True,
 							#              color=(255, 255, 0), thickness=2)
@@ -224,6 +224,9 @@ def main(argv=None):
 
 				if pill_inside == 1:
 					cv2.putText(im[:, :, ::-1], "pill detected inside the mouth", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
+					            2)
+					cv2.putText(im[:, :, ::-1], "please put the pill on the tongue and put down your hands", (50, 150), cv2.FONT_HERSHEY_SIMPLEX,
+					            0.7, (0, 0, 255),
 					            2)
 
 				else:
