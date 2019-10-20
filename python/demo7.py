@@ -120,48 +120,41 @@ def main(argv=None):
 					unknown_face_encoding = face_recognition.face_encodings(orig, face_location)[0]
 					index = utils.recognize_face(unknown_face_encoding, known_faces_encoding)
 					name = known_names[index]
-					cv2.putText(im[:, :, ::-1], name, (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+					cv2.putText(im[:, :, ::-1], name, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 					top, right, bottom, left = face_location[0]
 					#print(top, right, bottom, left)
-					dec = orig[left:right, bottom:top, ::-1]
+
 					face_height = bottom - top
 					# Draw a box around the face
 					cv2.rectangle(im[:, :, ::-1], (left, top), (right, bottom), (0, 0, 255))
-					dec = orig[top:bottom, left:right]
+					roi_text = orig[top:bottom, left:right]
+
 
 					# Display the resulting frame
 					# try:
 					# if(all(mouth_detection.mouth_detection_video(im[:, :, ::-1], detector, predictor))is not None)::
 					try:
 						(x, y, w, h) = mouth_detection.mouth_detection_video(orig, detector, predictor)
+						cv2.rectangle(im[:, :, ::-1], (x, y), (x + w, y + h), (0, 0, 255))
 						d = int(0.35 * h)
-						roi = orig[top:bottom, left:right]  # 在脸的范围内检测
+						roi = orig[y + d:y + h, x:x + w]
 						(px, py, pw, ph) = utils.color_detection_white(roi)  # 检测出白色药片所在坐标
 
-						if (pw != 0):
-							cv2.rectangle(im[:, :, ::-1], (left + px, top + py), (left + px + pw, top + py + ph), (0, 255, 0), 2)
+						if (pw!=0):
+							cv2.rectangle(im[:, :, ::-1], (x + px, y + py+ d ), (x + px + pw, y + py + ph +d), (0, 255, 0), 2)
+							pill_inside = 1
 
-							pill_detect = 1
-
-							#if ((x + px + pw) < (x + w)) & ((y + py + ph) < (y + h)):
-								#pill_inside = 1
-
-						#if h < 0.2 * face_height:
-							#mouth_close = 1
-						#else:
-							#mouth_close = 0
-
+						if h < 0.2 * face_height:
+							mouth_close = 1
 						else:
-							pill_detect = 0
-
-
+							mouth_close = 0
 					except:
 						pass
 
 				if (number_correct == 0):
 
 					start_time = time.time()
-					im_resized, (ratio_h, ratio_w) = utils.resize_image(dec)
+					im_resized, (ratio_h, ratio_w) = utils.resize_image(roi_text)
 
 					timer = {'net': 0, 'restore': 0, 'nms': 0}
 					start = time.time()
@@ -183,7 +176,7 @@ def main(argv=None):
 
 					if boxes is not None:
 						for indBoxes, box in enumerate(boxes):
-							text = utils.recognize_to_text(dec[:, :, ::-1], box)
+							text = utils.recognize_to_text(roi_text[:, :, ::-1], box)
 							# cv2.imwrite('./img_in_box.png', img_in_box)
 							print("[recognize box({})] text: {}".format(indBoxes, text))
 							# to avoid submitting errors
@@ -195,7 +188,7 @@ def main(argv=None):
 							add = np.array([[left],[top]])
 							ax = box.astype(np.int32).reshape((-1, 1, 2))
 							cv2.putText(im[:, :, ::-1], text, (box[0][0]+left,box[0][1]+top), cv2.FONT_HERSHEY_SIMPLEX, 2.8,
-							            (255, 255, 0), thickness=3)
+							            (255, 255, 0), thickness=1)
 
 							#cv2.polylines(im[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], True,
 							#              color=(255, 255, 0), thickness=2)
@@ -225,11 +218,11 @@ def main(argv=None):
 				                                 im[:, :, ::-1])
 
 				if pill_detect == 1:
-					cv2.putText(im[:, :, ::-1], "pill detected", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
+					cv2.putText(im[:, :, ::-1], "pill detected inside the mouth", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
 					            2)
 
 				else:
-					cv2.putText(im[:, :, ::-1], "no pill detected", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+					cv2.putText(im[:, :, ::-1], "no pill detected inside the mouth", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
 					            (0, 0, 255), 2)
 
 				if hands_detected == 1:
@@ -240,12 +233,28 @@ def main(argv=None):
 					cv2.putText(im[:, :, ::-1], "no hands detected", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
 					            (0, 0, 255), 2)
 
+				if (mouth_close == 1) :
 
+					cv2.putText(im[:, :, ::-1], "mouth close",
+						        (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
+				else:
+						cv2.putText(im[:, :, ::-1], "mouth open",
+						            (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+						timer = 1
 
 				if (pill_inside == 1) :
 
-					cv2.putText(im[:, :, ::-1], "Please put down the hands and show the pill on the tongue",
-						        (50, 300), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+					cv2.putText(im[:, :, ::-1], "pill's inside the mouth",
+						        (250,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
+				elif(pill_inside == 0)&(pill_detect==1):
+
+
+					cv2.putText(im[:, :, ::-1], "pill's outside the mouth",
+					            (250, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
+
 
 				if (pill_inside == 1) & (hands_detected == 0):
 
