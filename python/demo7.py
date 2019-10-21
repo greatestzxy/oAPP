@@ -1,4 +1,4 @@
-# python demo.py - -test_data_path=test.mp4 - -expected="E4" - -name = "profA"
+# usage: python demo9.py - -test_data_path=test.mp4 - -expected="E4" - -name = "profA"
 
 
 import cv2
@@ -141,8 +141,13 @@ def main(argv=None):
 						(px, py, pw, ph) = utils.color_detection_white(roi)  # 检测出白色药片所在坐标
 
 						if (pw!=0):
+
 							cv2.rectangle(im[:, :, ::-1], (x + px, y + py+ d ), (x + px + pw, y + py + ph +d), (0, 255, 0), 2)
 							pill_inside = 1
+
+						else:
+							pill_inside = 0
+
 
 						if h < 0.2 * face_height:
 							mouth_close = 1
@@ -187,8 +192,8 @@ def main(argv=None):
 
 							add = np.array([[left],[top]])
 							ax = box.astype(np.int32).reshape((-1, 1, 2))
-							cv2.putText(im[:, :, ::-1], text, (box[0][0]+left,box[0][1]+top), cv2.FONT_HERSHEY_SIMPLEX, 2.8,
-							            (255, 255, 0), thickness=1)
+							cv2.putText(im[:, :, ::-1], text, (box[0][0]+left,box[0][1]+top), cv2.FONT_HERSHEY_SIMPLEX, 2.5,
+							            (255, 255, 0), thickness=2)
 
 							#cv2.polylines(im[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], True,
 							#              color=(255, 255, 0), thickness=2)
@@ -217,8 +222,11 @@ def main(argv=None):
 				                                 scores1, boxes1, w, h,
 				                                 im[:, :, ::-1])
 
-				if pill_detect == 1:
+				if pill_inside == 1:
 					cv2.putText(im[:, :, ::-1], "pill detected inside the mouth", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
+					            2)
+					cv2.putText(im[:, :, ::-1], "please put the pill on the tongue and put down your hands", (50, 300), cv2.FONT_HERSHEY_SIMPLEX,
+					            0.7, (0, 0, 255),
 					            2)
 
 				else:
@@ -241,18 +249,8 @@ def main(argv=None):
 				else:
 						cv2.putText(im[:, :, ::-1], "mouth open",
 						            (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-						timer = 1
-
-				if (pill_inside == 1) :
-
-					cv2.putText(im[:, :, ::-1], "pill's inside the mouth",
-						        (250,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-
-				elif(pill_inside == 0)&(pill_detect==1):
 
 
-					cv2.putText(im[:, :, ::-1], "pill's outside the mouth",
-					            (250, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
 
 
