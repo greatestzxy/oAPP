@@ -106,7 +106,6 @@ def main(argv=None):
 				image_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 				pill_inside = 0
-				hands_detected = 0
 				pill_detect = 0
 				mouth_close = 0
 
@@ -204,6 +203,7 @@ def main(argv=None):
 							if text == FLAGS.expected:
 								number_correct = 1
 
+
 				if (number_correct == 1):
 					print("number is correct")
 					cv2.putText(im[:, :, ::-1], text, (50, 250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
@@ -212,6 +212,8 @@ def main(argv=None):
 
 				boxes1, scores1 = detector_utils.detect_objects(image_np,
 				                                                detection_graph, sess1)
+
+				hands_detected = 0
 				if boxes1 is not None:
 					hands_detected = 1
 				else:
@@ -225,7 +227,7 @@ def main(argv=None):
 				if pill_inside == 1:
 					cv2.putText(im[:, :, ::-1], "pill detected inside the mouth", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
 					            2)
-					cv2.putText(im[:, :, ::-1], "please put the pill on the tongue and put down your hands", (50, 150), cv2.FONT_HERSHEY_SIMPLEX,
+					cv2.putText(im[:, :, ::-1], "please put the pill on the tongue and put down your hands", (50, 300), cv2.FONT_HERSHEY_SIMPLEX,
 					            0.7, (0, 0, 255),
 					            2)
 
@@ -237,7 +239,7 @@ def main(argv=None):
 					cv2.putText(im[:, :, ::-1], "hands detected", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
 					            2)
 
-				else:
+				if hands_detected == 0:
 					cv2.putText(im[:, :, ::-1], "no hands detected", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
 					            (0, 0, 255), 2)
 
@@ -249,7 +251,7 @@ def main(argv=None):
 				else:
 						cv2.putText(im[:, :, ::-1], "mouth open",
 						            (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-						timer = 1
+
 
 
 
