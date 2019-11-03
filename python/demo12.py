@@ -1,4 +1,4 @@
-# python demo12.py - -test_data_path=test.mp4 - -expected="E4" - -name="student_A"
+# python demo12.py - -test_data_path=67_1.mp4 - -expected="67_1" - -name="xiaoyu"
 
 
 import cv2
@@ -45,7 +45,7 @@ start_time = datetime.datetime.now()
 num_frames = 0
 
 # max number of hands we want to detect
-num_hands_detect = 2
+num_hands_detect = 1
 
 score_thresh = 0.2
 
@@ -55,7 +55,7 @@ detection_graph, sess1 = detector_utils.load_inference_graph()
 
 timer = 0
 
-suspicious = 0
+suspicious = 1
 
 
 def main(argv=None):
@@ -296,17 +296,21 @@ def main(argv=None):
 					if time_up == 1:
 						if (mouth_close == 0)&(pill_inside==1):
 							cv2.putText(im[:, :, ::-1], "Detection is over", (50, 500),cv2.FONT_HERSHEY_SIMPLEX, 0.7,(0, 0, 255), 2)
+							global suspicious
 							suspicious = 0
 
+
 						elif (mouth_close == 0)&(pill_inside==0):
-							cv2.putText(im[:, :, ::-1], "Suspectical", (50, 500),
+							cv2.putText(im[:, :, ::-1], "Suspicious", (50, 500),
 							            cv2.FONT_HERSHEY_SIMPLEX, 0.7,
 							            (0, 0, 255), 2)
-							suspicious = 1
+
+
 
 
 
 					cv2.imshow("im", im[:, :, ::-1])
+
 					if cv2.waitKey(25) & 0xFF == ord('q'):
 						cv2.destroyAllWindows()
 						break
@@ -331,7 +335,7 @@ def main(argv=None):
 
 			print("right_person",right_person)
 
-			print("suspicous", suspicious)
+			print("suspicious", suspicious)
 
 
 
