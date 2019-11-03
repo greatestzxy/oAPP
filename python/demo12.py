@@ -296,7 +296,7 @@ def main(argv=None):
 					if time_up == 1:
 						if (mouth_close == 0)&(pill_inside==1):
 							cv2.putText(im[:, :, ::-1], "Detection is over", (50, 500),cv2.FONT_HERSHEY_SIMPLEX, 0.7,(0, 0, 255), 2)
-							suspicous = 0
+							suspicious = 0
 
 						elif (mouth_close == 0)&(pill_inside==0):
 							cv2.putText(im[:, :, ::-1], "Suspectical", (50, 500),
@@ -331,7 +331,7 @@ def main(argv=None):
 
 			print("right_person",right_person)
 
-			print("suspicous", suspicous)
+			print("suspicous", suspicious)
 
 
 
