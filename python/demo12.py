@@ -1,4 +1,4 @@
-# python demo12.py - -test_data_path=test.mp4 - -expected="E4" - -name="profA"
+# python demo12.py - -test_data_path=test.mp4 - -expected="E4" - -name="student_A"
 
 
 import cv2
@@ -55,6 +55,8 @@ detection_graph, sess1 = detector_utils.load_inference_graph()
 
 timer = 0
 
+suspicious = 0
+
 
 def main(argv=None):
 	# fps = 24  # 视频帧率
@@ -91,7 +93,7 @@ def main(argv=None):
 			n = 0
 			pill_disappear = 0
 
-			threshold = 20
+			threshold = 5
 			gap = 7
 			lastframe = None
 			timer2 = 0
@@ -254,7 +256,7 @@ def main(argv=None):
 
 
 
-					if (pill_inside == 1) & (hands_detected == 0) :
+					if (pill_inside == 1) & (hands_detected == 0) & (time_up == 0) :
 
 							cv2.putText(im[:, :, ::-1], "Please don't remove the pill and close your mouth for 10 seconds",
 							            (50, 350), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
@@ -294,13 +296,13 @@ def main(argv=None):
 					if time_up == 1:
 						if (mouth_close == 0)&(pill_inside==1):
 							cv2.putText(im[:, :, ::-1], "Detection is over", (50, 500),cv2.FONT_HERSHEY_SIMPLEX, 0.7,(0, 0, 255), 2)
-							suspetical = 0
+							suspicous = 0
 
 						elif (mouth_close == 0)&(pill_inside==0):
 							cv2.putText(im[:, :, ::-1], "Suspectical", (50, 500),
 							            cv2.FONT_HERSHEY_SIMPLEX, 0.7,
 							            (0, 0, 255), 2)
-							suspetical = 1
+							suspicious = 1
 
 
 
@@ -318,17 +320,18 @@ def main(argv=None):
 
 
 			face_detection_result = nb_fr/t
-			print(FLAGS.name)
-			if face_detection_result > 0.5:
+
+			if face_detection_result > 0.7:
 				right_person = 1
 			else:
 				right_person = 0
+
 
 			print("number correct",number_correct)
 
 			print("right_person",right_person)
 
-			print("suspicous", suspetical)
+			print("suspicous", suspicous)
 
 
 
