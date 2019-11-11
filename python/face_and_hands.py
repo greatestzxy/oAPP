@@ -1,4 +1,4 @@
-# python demo12.py - -test_data_path=test.mp4 - -expected="E4" - -name="student_A"
+# python face_and_hands.py - -test_data_path=test.mp4 - -expected="E4" - -name="student_A"
 
 
 import cv2
