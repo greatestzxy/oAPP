@@ -1,4 +1,4 @@
-# python face_and_hands.py - -test_data_path=test.mp4 - -expected="E4" - -name="student_A"
+# python face_and_hands.py - -test_data_path=E4.mp4 - -expected="E4" - -name="yijia"
 
 
 import cv2
@@ -21,6 +21,7 @@ import datetime
 import detector_utils
 import threading
 
+
 detector = dlib.get_frontal_face_detector()
 predictor_path = './shape_predictor_68_face_landmarks.dat'
 predictor = dlib.shape_predictor(predictor_path)
@@ -40,7 +41,7 @@ start_time = datetime.datetime.now()
 # max number of hands we want to detect
 num_hands_detect = 1
 
-score_thresh = 0.2
+score_thresh = 0.4
 
 timer_start = 0
 
@@ -51,9 +52,18 @@ timer = 0
 finished = 0
 
 
+
+
 def main(argv=None):
 
-	font_size = 0.6
+
+
+	process_start = time.time()
+
+	font_location1 = 0
+	font_location2 = 25
+
+	font_size = 0.45
 
 	font_thickness = 2
 
@@ -63,8 +73,6 @@ def main(argv=None):
 
 	threshold = 5
 
-	gap = 2
-
 	timer2 = 0
 
 	time_up = 0
@@ -73,9 +81,9 @@ def main(argv=None):
 
 	nb_fr = 1
 
-	pill_removed = 0
 
-	vs = cv2.VideoCapture(FLAGS.test_data_path)
+	vs = cv2.VideoCapture(0)
+	'''
 
 	length = int(vs.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -90,23 +98,34 @@ def main(argv=None):
 	print("duration of the video:",video_duration)
 
 	gap = int(fps/2)
+	'''
+
+	gap = 7
 
 	fps = FPS().start()
 
-	all_frames = []
+	hands = []
+
 
 	frame_count = 0
 
+	frame_height = 600
+
+	over=0
+
+	start_counting = 0
+
+	pill_removed = 0
 
 
 	while True:
+
+
 
 		ret, frame = vs.read()
 
 		if ret is False:
 			break
-
-		all_frames.append(frame)
 
 		frame_count = frame_count + 1
 
@@ -115,13 +134,12 @@ def main(argv=None):
 
 			t = t + 1
 
-			frame = all_frames[frame_count-1]
-
-			frame = imutils.resize(frame, height=1000)
+			frame = imutils.resize(frame, height = 450)
 
 			im = frame[:, :, ::-1]
 
 			orig = frame.copy()
+
 			image_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 			pill_inside = 0
@@ -140,7 +158,7 @@ def main(argv=None):
 				name = known_names[index]
 				if name == FLAGS.name:
 					nb_fr += 1
-				cv2.putText(im[:, :, ::-1], name, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 255), font_thickness)
+				cv2.putText(im[:, :, ::-1], name, (font_location1, font_location2), cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 255), font_thickness)
 				top, right, bottom, left = face_location[0]
 				#print(top, right, bottom, left)
 
@@ -186,64 +204,88 @@ def main(argv=None):
 					                            scores1, boxes1, w, h,
 					                            im[:, :, ::-1])
 
+			hands.append(hands_detected)
 
-			if timer2 == 0 & time_up== 0:
+			if (over ==0)&(pill_removed==0):
+				if timer2 == 0 & time_up== 0:
 
-				cv2.putText(im[:, :, ::-1], "please put the pill on the tongue and take off your hands",
-						            (50, 300),
-						            cv2.FONT_HERSHEY_SIMPLEX,
-						    font_size, (0, 0, 255),
-						    font_thickness)
-
-
-			if (pill_inside == 1) & (hands_detected == 0) & (time_up == 0) :
-
-					cv2.putText(im[:, :, ::-1], "Please don't remove the pill and close your mouth for 10 seconds",
-							            (50, 350), cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 255), font_thickness)
-					timer2 = 1
+					cv2.putText(im[:, :, ::-1], "please put the pill on the tongue and take off your hands",
+							            (font_location1, font_location2+25),
+							            cv2.FONT_HERSHEY_SIMPLEX,
+							    font_size, (0, 0, 255),
+							    font_thickness)
 
 
-			if timer2 == 1 :
-				if (mouth_close == 0) & (pill_inside == 0): # if we can't detect pill when mouth is open, it maybe because of it's the process of closing mouth and the pill is blocked
+				if (pill_inside == 1) & (hands_detected == 0) & (time_up == 0) :
 
-					pill_disappear = 1
+						cv2.putText(im[:, :, ::-1], "Please don't remove the pill and close your mouth for 10 seconds",
+						            (font_location1, font_location2+50), cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 255), font_thickness)
+						timer2 = 1
 
-				if (pill_disappear == 1) & (hands_detected == 1):
-					cv2.putText(im[:, :, ::-1], "Pill is removed!", (50, 400), cv2.FONT_HERSHEY_SIMPLEX, font_size,
+
+				if timer2 == 1 :
+
+
+					if (mouth_close == 0) & (pill_inside == 0): # if we can't detect pill when mouth is open, it maybe because of it's the process of closing mouth and the pill is blocked
+
+						pill_disappear = 1
+
+					if  (hands_detected == 1)&(start_counting==1):
+						cv2.putText(im[:, :, ::-1], "Pill is removed!", (font_location1, font_location2+150), cv2.FONT_HERSHEY_SIMPLEX, font_size,
+						            (font_location1, font_location2+75), font_thickness)
+						timer2 = 0
+						timing = 0
+						pill_disappear = 0
+						pill_removed = 1
+
+
+					else:
+						if mouth_close==1:
+							cv2.putText(im[:, :, ::-1], "Time starts", (font_location1, font_location2+100), cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 255), font_thickness)
+							timing = timing + 1
+							start_counting = 1
+
+
+
+				if timing > threshold:
+					cv2.putText(im[:, :, ::-1], "Time's up, please open your mouth!", (font_location1, font_location2+125), cv2.FONT_HERSHEY_SIMPLEX, font_size,
 							            (0, 0, 255), font_thickness)
-					timer2 = 0
-					timing = 0
-					pill_disappear = 0
-					pill_removed = 1
-
+					time_up = 1
 
 				else:
-					if mouth_close==1:
-						cv2.putText(im[:, :, ::-1], "Time starts", (50, 400), cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 255), font_thickness)
-						timing = timing + 1
+					time_up = 0
+
+
+				if time_up == 1:
+					if (mouth_close == 0)&(pill_inside==1):
+						cv2.putText(im[:, :, ::-1], "Detection is over", (font_location1, font_location2+150),cv2.FONT_HERSHEY_SIMPLEX, font_size,(0, 0, 255), font_thickness)
+						global finished
+						finished = 1
+						over=1
 
 
 
-			if timing > threshold:
-				cv2.putText(im[:, :, ::-1], "Time's up, please open your mouth!", (50, 450), cv2.FONT_HERSHEY_SIMPLEX, font_size,
-						            (0, 0, 255), font_thickness)
-				time_up = 1
+					elif (mouth_close == 0)&(pill_inside==0):
+						cv2.putText(im[:, :, ::-1], "Not finished", (font_location1, font_location2+175),
+								            cv2.FONT_HERSHEY_SIMPLEX, font_size,
+								            (0, 0, 255), font_thickness)
+						over=1
+
+			elif pill_removed==1:
+				cv2.putText(im[:, :, ::-1], "Pill is removed!", (font_location1, font_location2 + 150),
+				            cv2.FONT_HERSHEY_SIMPLEX, font_size,
+				            (font_location1, font_location2 + 75), font_thickness)
+
 
 			else:
-				time_up = 0
+					if finished==0:
+						cv2.putText(im[:, :, ::-1], "Not finished", (font_location1, font_location2 + 175),
+						            cv2.FONT_HERSHEY_SIMPLEX, font_size,
+						            (0, 0, 255), font_thickness)
+					else:
+						cv2.putText(im[:, :, ::-1], "Detection is over", (font_location1, font_location2 + 150),
+						            cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 255), font_thickness)
 
-
-			if time_up == 1:
-				if (mouth_close == 0)&(pill_inside==1):
-					cv2.putText(im[:, :, ::-1], "Detection is over", (50, 500),cv2.FONT_HERSHEY_SIMPLEX, font_size,(0, 0, 255), font_thickness)
-					global finished
-					finished = 1
-
-
-				elif (mouth_close == 0)&(pill_inside==0):
-					cv2.putText(im[:, :, ::-1], "Not finished", (50, 500),
-							            cv2.FONT_HERSHEY_SIMPLEX, font_size,
-							            (0, 0, 255), font_thickness)
 
 
 			cv2.imshow("im", im[:, :, ::-1])
@@ -260,19 +302,31 @@ def main(argv=None):
 
 	face_detection_result = nb_fr/t
 
-	if face_detection_result > 0.7:
+	process_time = time.time() - process_start
+
+	if face_detection_result > 0.5:
 		right_person = 1
 		print("It's the right person")
 	else:
 		right_person = 0
 		print("It's not the right person")
 
-	if finished==1:
+	if finished == 1:
 
 		print("Detection finished")
 
 	else:
 		print("Detection is not finished")
+
+
+
+	if pill_removed==1:
+		print("pill has been removed")
+
+	print("process time:",process_time)
+	#print("Video length:",video_duration)
+
+	print(face_detection_result)
 
 	fps.stop()
 	vs.release()
