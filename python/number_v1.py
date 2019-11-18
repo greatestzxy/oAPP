@@ -1,4 +1,4 @@
-# python number_v1.py - -test_data_path=b17_1.mp4 - -expected="E4" - -name = "yijia"
+# python number_v1.py - -test_data_path=test.mp4 - -expected="110"
 
 
 import cv2
