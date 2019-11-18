@@ -61,6 +61,8 @@ def main(argv=None):
 	number_correct = 0
 	labeled_img_dir = './labeled_image'
 
+	time1 = time.time()
+
 	with tf.get_default_graph().as_default():
 		input_images = tf.placeholder(tf.float32, shape=[None, None, None, 3], name='input_images')
 		global_step = tf.get_variable('global_step', [], initializer=tf.constant_initializer(0), trainable=False)
@@ -84,10 +86,12 @@ def main(argv=None):
 
 			frame_count = 0
 
-
+			large = 0
 
 			while True:
-				pill_ready = 0
+
+
+
 				not_verified = 1
 				processing_time = time.time()-duration_start
 				print(processing_time)
@@ -98,8 +102,10 @@ def main(argv=None):
 				if frame is None:
 					break
 				pill_ready = 0
-
-				frame = imutils.resize(frame, height = 1000)
+				if large==1:
+					frame = imutils.resize(frame, height = 1000)
+				else:
+					frame = imutils.resize(frame, height=400)
 				im = frame[:, :, ::-1]
 
 				orig = frame.copy()
@@ -147,6 +153,8 @@ def main(argv=None):
 							cv2.rectangle(im[:, :, ::-1], (x + px, y + py + d), (x + px + pw, y + py + ph + d),
 							              (0, 255, 0), font_thickness)
 							pill_ready = 1
+
+							large = 1
 
 						else:
 							pill_ready = 0
@@ -231,6 +239,13 @@ def main(argv=None):
 
 	else:
 		print("number is not correct")
+
+	time1 = time.time() -time1
+	time2 = time.time()-duration_start
+
+	print("whole processing time:",time1)
+	print("video processing time",time2)
+
 
 
 
