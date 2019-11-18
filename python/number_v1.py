@@ -212,6 +212,11 @@ def main(argv=None):
 					except:
 						pass
 
+				time1 = time.time() - time1
+				time2 = time.time() - duration_start
+
+				if time2>120:
+					break
 
 
 				if (number_correct == 1):
@@ -240,8 +245,7 @@ def main(argv=None):
 	else:
 		print("number is not correct")
 
-	time1 = time.time() -time1
-	time2 = time.time()-duration_start
+
 
 	print("whole processing time:",time1)
 	print("video processing time",time2)
