@@ -1,7 +1,8 @@
 # OApp
-if you want to test the code, try cd Source -> python output.py --test_data_path= path_to_video  --expected= expect_input --name=expecte_patient name
-for example:python demo7.py - -test_data_path=test.mp4 - -expected="E4" - -name = "xiyuan"
+The code includes twp parts, number recognition and face recognition.
+if you want to test the face reognition part, try cd Source -> python part1_face_recognition.py --test_data_path= path_to_video  --expected= expect_input --name=expecte_patient name
+if you want to test the number reognition part, try cd Source -> python part2_number_recognition.py --test_data_path= path_to_video  --expected= expect_input --name=expecte_patient name
+for example:python part1_face_recognition.py - -test_data_path=test.mp4 - -expected="E4" - -name="xiyuan"
 
-The number in the demo's filename indicates its version. The largest number refers to the latest version. 
 Please contact me to get the dataase and testing video
 
