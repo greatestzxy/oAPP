@@ -35,7 +35,6 @@ category_index = label_map_util.create_category_index(categories)
 def load_inference_graph():
 
     # load frozen tensorflow model into memory
-    print("> ====== loading HAND frozen graph into memory")
     detection_graph = tf.Graph()
     with detection_graph.as_default():
         od_graph_def = tf.GraphDef()
@@ -44,20 +43,22 @@ def load_inference_graph():
             od_graph_def.ParseFromString(serialized_graph)
             tf.import_graph_def(od_graph_def, name='')
         sess = tf.Session(graph=detection_graph)
-    print(">  ====== Hand Inference graph loaded.")
     return detection_graph, sess
 
 
 # draw the detected bounding boxes on the images
 # You can modify this to also draw a label.
 def draw_box_on_image(num_hands_detect, score_thresh, scores, boxes, im_width, im_height, image_np):
+    detection = 0
     for i in range(num_hands_detect):
         if (scores[i] > score_thresh):
             (left, right, top, bottom) = (boxes[i][1] * im_width, boxes[i][3] * im_width,
                                           boxes[i][0] * im_height, boxes[i][2] * im_height)
             p1 = (int(left), int(top))
             p2 = (int(right), int(bottom))
-            cv2.rectangle(image_np, p1, p2, (77, 255, 9), 3, 1)
+            cv2.rectangle(image_np, p1, p2, (255, 0, 0), 2, 1)
+            detection = 1
+    return detection
 
 
 # Show fps value on image.
