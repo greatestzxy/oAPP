@@ -1,4 +1,4 @@
-#python part1_face_recognition.py - -test_data_path=eE4.mp4 - -expected="E4" - -name ="xiyuan"
+#python part1_face_recognition.py - -test_data_path=test.mp4 - -expected="E4" - -name ="xiyuan"
 #To improve the processing accuracy and efficieny, please downsize the frame by changing the parameter in line 153
 
 import cv2
