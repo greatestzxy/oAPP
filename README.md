@@ -7,5 +7,5 @@ if you want to test the number reognition part, try cd Source -> python part2_nu
 
 for example:python part1_face_recognition.py - -test_data_path=test.mp4 - -expected="E4" - -name="xiyuan"
 
-Please contact me to get the database and testing video
+Please contact me(zhaoxiyuan2019@163.com) to get the database and testing video.
 
