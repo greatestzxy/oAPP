@@ -51,9 +51,6 @@ font_thickness = 2
 
 detection_graph, sess1 = detector_utils.load_inference_graph()
 
-#
-threshold = 1000
-
 num_hands_detect = 1
 
 score_thresh = 0.4
@@ -127,9 +124,6 @@ def main(argv=None):
 				hands_detected = detector_utils.draw_box_on_image(num_hands_detect, score_thresh,
 				                                                  scores1, boxes1, w, h,
 				                                                  im[:, :, ::-1])
-
-				if (processing_time>threshold):
-					break
 
 				# if there's no hand holding the pill, we do not process the fraem
 				if hands_detected==0:
@@ -220,13 +214,13 @@ def main(argv=None):
 				time2 = time.time() - duration_start
 
 				#if the time of number or letter recognition is greater than certain amount of time, stop processing
-				if time2>120:
+				if time2>180:
 					break
 				#if we detect the same number as the input, stop processing
 				if (number_correct == 1):
 					break
 
-				cv2.imshow("im", im[:, :, ::-1])
+				#cv2.imshow("im", im[:, :, ::-1])
 				if cv2.waitKey(25) & 0xFF == ord('q'):
 					cv2.destroyAllWindows()
 
@@ -245,7 +239,7 @@ def main(argv=None):
 	else:
 		print("Number read is",text,", which is different from the number on the pill. We will check this manually")
 		sys.stdout.flush()
-	print("whole processing time:",time1)
+
 	print("video processing time",time2)
 
 
