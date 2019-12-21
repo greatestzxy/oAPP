@@ -16,7 +16,9 @@ import model
 from icdar import restore_rectangle
 import os
 import locality_aware_nms as nms_locality
-
+from threading import Thread
+import sys
+import label_map_util
 
 def is_an_image_file(filename):
     '''
@@ -297,8 +299,8 @@ def get_image_in_box(img, box):
     # cv2.imshow('orig', img)
     # print("orig_angle: {} angle: {}".format(rect[2], angle))
 
-    height = img.shape[0]  # 原始图像高度
-    width = img.shape[1]  # 原始图像宽度
+    height = img.shape[0]  # height of original image
+    width = img.shape[1]  # width of orginal image
     rotateMat = cv2.getRotationMatrix2D((width / 2, height / 2), angle, 1)  # 按angle角度旋转图像
     heightNew = int(width * fabs(sin(radians(angle))) + height * fabs(cos(radians(angle))))
     widthNew = int(height * fabs(sin(radians(angle))) + width * fabs(cos(radians(angle))))
@@ -309,20 +311,19 @@ def get_image_in_box(img, box):
     # cv2.imshow('rotateImg2', imgRotation)
     # cv2.waitKey(0)
 
-    # 旋转后图像的四点坐标
+    # the location of the image after rotation
     [[pt1[0]], [pt1[1]]] = np.dot(rotateMat, np.array([[pt1[0]], [pt1[1]], [1]]))
     [[pt3[0]], [pt3[1]]] = np.dot(rotateMat, np.array([[pt3[0]], [pt3[1]], [1]]))
     [[pt2[0]], [pt2[1]]] = np.dot(rotateMat, np.array([[pt2[0]], [pt2[1]], [1]]))
     [[pt4[0]], [pt4[1]]] = np.dot(rotateMat, np.array([[pt4[0]], [pt4[1]], [1]]))
 
-    # 处理反转的情况
+    # if the image is reversed
     if pt2[1] > pt4[1]:
         pt2[1], pt4[1] = pt4[1], pt2[1]
     if pt1[0] > pt3[0]:
         pt1[0], pt3[0] = pt3[0], pt1[0]
 
 
-    # 向外扩展区域
     startY = int(pt2[1])
     endY = int(pt4[1])
     startX = int(pt1[0])
@@ -337,12 +338,11 @@ def get_image_in_box(img, box):
     endX = min(widthNew, endX + (dX * 2))
     endY = min(heightNew, endY + (dY * 2))
 
-    # 裁减得到的旋转矩形框
     imgOut = imgRotation[startY:endY, startX:endX]
 
     cv2.destroyAllWindows()
 
-    # 放大图像
+    # enlarge the picture
     imgOut = cv2.resize(imgOut, (imgOut.shape[1] * 2, imgOut.shape[0] * 2))
     #cv2.imshow("resize", imgOut)
 
@@ -358,7 +358,7 @@ def get_image_in_box(img, box):
     # ex_blackhat = cv2.morphologyEx(imgOut, cv2.MORPH_BLACKHAT, kernel)
     # cv2.imshow("blackhat", ex_blackhat)
 
-    # 腐蚀
+    # erosion
     imgOut = cv2.erode(imgOut, kernel)
     #cv2.imshow("erode", imgOut)
 
@@ -366,24 +366,24 @@ def get_image_in_box(img, box):
     #cv2.imshow("open", ex_open)
     # imgOut = ex_open
 
-    # 闭运算
+    # close oeration
     ex_close = cv2.morphologyEx(imgOut, cv2.MORPH_CLOSE, kernel)
     #cv2.imshow("close", ex_close)
     # imgOut = ex_close
 
-    # # 膨胀
+    # # dilation
     # imgOut = cv2.dilate(imgOut, kernel)
     # cv2.imshow("dilate", imgOut)
 
-    # 平滑
+    # blur
     imgOut = cv2.GaussianBlur(imgOut,(5,5),0)
     #cv2.imshow("GaussianBlur", imgOut)
 
-    # 灰度化
+    # grayscale
     imgOut = cv2.cvtColor(imgOut, cv2.COLOR_BGR2GRAY)
     #cv2.imshow("cvtColor", imgOut)
 
-    # 增强对比度
+    # contrast enhancement
     ehist = cv2.equalizeHist(imgOut)
     clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(2, 2))
     chist = clahe.apply(imgOut)
@@ -394,30 +394,31 @@ def get_image_in_box(img, box):
     imgOut = chist
     # imgOut = ehist
 
-    # 膨胀
+    # dilation
     imgOut = cv2.dilate(imgOut, kernel)
     #cv2.imshow("dilate", imgOut)
 
-    # # OTSU法二值化
+    # # OTSU
     # ret, th_otsu = cv2.threshold(imgOut, 0, 255, cv2.THRESH_OTSU)
     # cv2.imshow("threshold_otsu", th_otsu)
     # imgOut = th_otsu
 
-    # 二值化
+    # binaryzation
     ret, th_bin = cv2.threshold(imgOut, 75, 255, cv2.THRESH_BINARY)
     #cv2.imshow("threshold", th_bin)
     imgOut = th_bin
 
-    # 去除边缘
+    # remove the boundary
     imgOut = remove_bound_and_small_area(imgOut)
     #cv2.imshow("remove_bound_area", imgOut)
 
     cv2.waitKey(0)
     return imgOut
 
+
 def area_to_char_text(img):
     config = (#10
-        "-l eng --oem 0 --psm 10 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+        "-l eng --oem 3 --psm 10 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
     text = pytesseract.image_to_string(img, config=config)
     return text
 
@@ -426,6 +427,7 @@ def area_to_text(img):
         "-l eng --oem 1 --psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
     text = pytesseract.image_to_string(img, config=config)
     return text
+
 
 def split_to_area_and_recognize(opencv_img, padding = (0.08, 0.12)): # padding (y,x)
     height, width = opencv_img.shape[:2]
@@ -460,6 +462,154 @@ def recognize_to_text(img, box):
     # text = area_to_text(img_in_box);
     return text
 
+detection_graph = tf.Graph()
+sys.path.append("..")
+
+# score threshold for showing bounding boxes.
+_score_thresh = 0.27
+
+MODEL_NAME = 'hand_inference_graph'
+# Path to frozen detection graph. This is the actual model that is used for the object detection.
+PATH_TO_CKPT = MODEL_NAME + '/frozen_inference_graph.pb'
+# List of the strings that is used to add correct label for each box.
+PATH_TO_LABELS = os.path.join(MODEL_NAME, 'hand_label_map.pbtxt')
+
+NUM_CLASSES = 1
+# load label map
+label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
+categories = label_map_util.convert_label_map_to_categories(
+    label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
+category_index = label_map_util.create_category_index(categories)
+
+
+# Load a frozen infrerence graph into memory
+def load_inference_graph():
+
+    # load frozen tensorflow model into memory
+    print("> ====== loading HAND frozen graph into memory")
+    detection_graph = tf.Graph()
+    with detection_graph.as_default():
+        od_graph_def = tf.GraphDef()
+        with tf.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
+            serialized_graph = fid.read()
+            od_graph_def.ParseFromString(serialized_graph)
+            tf.import_graph_def(od_graph_def, name='')
+        sess = tf.Session(graph=detection_graph)
+    print(">  ====== Hand Inference graph loaded.")
+    return detection_graph, sess
+
+
+# draw the detected bounding boxes on the images
+# You can modify this to also draw a label.
+def draw_box_on_image(num_hands_detect, score_thresh, scores, boxes, im_width, im_height, image_np):
+    for i in range(num_hands_detect):
+        if (scores[i] > score_thresh):
+            (left, right, top, bottom) = (boxes[i][1] * im_width, boxes[i][3] * im_width,
+                                          boxes[i][0] * im_height, boxes[i][2] * im_height)
+            p1 = (int(left), int(top))
+            p2 = (int(right), int(bottom))
+            cv2.rectangle(image_np, p1, p2, (77, 255, 9), 3, 1)
+
+
+# Show fps value on image.
+def draw_fps_on_image(fps, image_np):
+    cv2.putText(image_np, fps, (20, 50),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.75, (77, 255, 9), 2)
+
+
+# Actual detection .. generate scores and bounding boxes given an image
+def detect_objects(image_np, detection_graph, sess):
+    # Definite input and output Tensors for detection_graph
+    image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+    # Each box represents a part of the image where a particular object was detected.
+    detection_boxes = detection_graph.get_tensor_by_name(
+        'detection_boxes:0')
+    # Each score represent how level of confidence for each of the objects.
+    # Score is shown on the result image, together with the class label.
+    detection_scores = detection_graph.get_tensor_by_name(
+        'detection_scores:0')
+    detection_classes = detection_graph.get_tensor_by_name(
+        'detection_classes:0')
+    num_detections = detection_graph.get_tensor_by_name(
+        'num_detections:0')
+
+    image_np_expanded = np.expand_dims(image_np, axis=0)
+
+    (boxes, scores, classes, num) = sess.run(
+        [detection_boxes, detection_scores,
+            detection_classes, num_detections],
+        feed_dict={image_tensor: image_np_expanded})
+    return np.squeeze(boxes), np.squeeze(scores)
+
+def movement_detection(lastframe,frame):
+
+    difference = 0
+
+    frameDelta = cv2.absdiff(lastframe, frame)
+
+
+    # transform into greyscale
+    thresh = cv2.cvtColor(frameDelta, cv2.COLOR_BGR2GRAY)
+
+    # binaryzation
+    thresh = cv2.threshold(thresh, 25, 255, cv2.THRESH_BINARY)[1]
+
+
+    # get the contours
+    cnts, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    for c in cnts:
+        # ignore the small contours
+        if cv2.contourArea(c) < 300:
+            continue
+
+            # calculate the boundary of contours and draw the boundary
+        else:
+            difference = 1
+
+
+    return difference
+
+
+class WebcamVideoStream:
+    def __init__(self, src, width, height):
+        # initialize the video camera stream and read the first frame
+        # from the stream
+        self.stream = cv2.VideoCapture(src)
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        (self.grabbed, self.frame) = self.stream.read()
+
+        # initialize the variable used to indicate if the thread should
+        # be stopped
+        self.stopped = False
+
+    def start(self):
+        # start the thread to read frames from the video stream
+        Thread(target=self.update, args=()).start()
+        return self
+
+    def update(self):
+        # keep looping infinitely until the thread is stopped
+        while True:
+            # if the thread indicator variable is set, stop the thread
+            if self.stopped:
+                return
+
+            # otherwise, read the next frame from the stream
+            (self.grabbed, self.frame) = self.stream.read()
+
+    def read(self):
+        # return the frame most recently read
+        return self.frame
+
+    def size(self):
+        # return size of the capture device
+        return self.stream.get(3), self.stream.get(4)
+
+    def stop(self):
+        # indicate that the thread should be stopped
+        self.stopped = True
 
 
 
